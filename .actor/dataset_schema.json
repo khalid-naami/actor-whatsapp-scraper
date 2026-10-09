@@ -1,0 +1,112 @@
+{
+    "actorSpecification": 1,
+    "fields": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "title": "Entity Type"
+            },
+            "url": {
+                "type": "string",
+                "title": "WhatsApp URL"
+            },
+            "id": {
+                "type": "string",
+                "title": "Group Code, Channel ID, or Phone"
+            },
+            "title": {
+                "type": "string",
+                "title": "Name / Title"
+            },
+            "description": {
+                "type": "string",
+                "title": "Description / About"
+            },
+            "iconUrl": {
+                "type": "string",
+                "title": "Avatar / Icon URL"
+            },
+            "status": {
+                "type": "string",
+                "title": "Invite Status (Active, Full, Revoked)"
+            },
+            "membersCount": {
+                "type": "string",
+                "title": "Group Members Count"
+            },
+            "membersCountRaw": {
+                "type": "integer",
+                "title": "Members Raw Count"
+            },
+            "followersCount": {
+                "type": "string",
+                "title": "Channel Followers Count"
+            },
+            "followersCountRaw": {
+                "type": "integer",
+                "title": "Followers Raw Count"
+            },
+            "isVerified": {
+                "type": "boolean",
+                "title": "Verified Badge"
+            },
+            "phone": {
+                "type": "string",
+                "title": "Phone Number"
+            },
+            "phoneCountry": {
+                "type": "string",
+                "title": "Phone Country"
+            },
+            "phoneDialCode": {
+                "type": "string",
+                "title": "Phone Dial Code"
+            },
+            "phoneValid": {
+                "type": "boolean",
+                "title": "Is Valid WhatsApp Account"
+            },
+            "isBusiness": {
+                "type": "boolean",
+                "title": "Is WhatsApp Business"
+            },
+            "businessCategory": {
+                "type": "string",
+                "title": "Business Category"
+            },
+            "businessAddress": {
+                "type": "string",
+                "title": "Business Address"
+            },
+            "businessEmail": {
+                "type": "string",
+                "title": "Business Email"
+            },
+            "businessWebsite": {
+                "type": "string",
+                "title": "Business Website"
+            },
+            "catalogProductsCount": {
+                "type": "integer",
+                "title": "Catalog Products Count"
+            },
+            "products": {
+                "type": "array",
+                "title": "Catalog Products"
+            },
+            "channelUpdates": {
+                "type": "array",
+                "title": "Recent Channel Updates"
+            },
+            "searchQuery": {
+                "type": "string",
+                "title": "Search Query / Keyword"
+            },
+            "scrapedAt": {
+                "type": "string",
+                "title": "Scraped At Timestamp"
+            }
+        }
+    }
+}
