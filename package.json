@@ -1,0 +1,32 @@
+{
+  "name": "actor-whatsapp-scraper",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "WhatsApp Ultimate All-in-One Scraper on Apify. Extracts WhatsApp Groups metadata, Member counts, WhatsApp Channels, Phone Number / Contact verification, Business Profiles & Catalogs, and Public Group Finder by Keyword.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node src/main.js"
+  },
+  "keywords": [
+    "apify",
+    "actor",
+    "whatsapp",
+    "whatsapp-scraper",
+    "whatsapp-groups",
+    "whatsapp-channels",
+    "leads",
+    "phone-checker",
+    "business-profiles",
+    "crawlee",
+    "playwright"
+  ],
+  "author": "Khalil",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "apify": "^3.2.6",
+    "crawlee": "^3.12.2",
+    "got-scraping": "^4.0.7",
+    "playwright": "^1.49.1"
+  }
+}
