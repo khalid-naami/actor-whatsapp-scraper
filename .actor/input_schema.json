@@ -1,0 +1,77 @@
+{
+    "title": "WhatsApp Ultimate Scraper Input Schema",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "mode": {
+            "title": "Extraction Mode",
+            "type": "string",
+            "description": "Select what WhatsApp data to extract, or use AUTO_DETECT.",
+            "default": "AUTO_DETECT",
+            "editor": "select",
+            "enum": [
+                "AUTO_DETECT",
+                "GROUPS",
+                "CHANNELS",
+                "NUMBER_CHECK",
+                "CATALOG",
+                "GROUP_FINDER"
+            ],
+            "enumTitles": [
+                "Auto-Detect (From URLs or Numbers)",
+                "WhatsApp Groups (Invites, Members, Title & Status)",
+                "WhatsApp Channels (Followers, Bio, Verified & Posts)",
+                "Phone Number Checker & Business Profiles",
+                "WhatsApp Business Catalogs & Products",
+                "Group Finder by Keyword (Discover Public Groups)"
+            ]
+        },
+        "targetUrls": {
+            "title": "Target WhatsApp URLs",
+            "type": "array",
+            "description": "List of WhatsApp Group invite links (chat.whatsapp.com/...), Channels, or wa.me links.",
+            "editor": "stringList",
+            "prefill": [
+                "https://chat.whatsapp.com/invite/sampleGroupCode",
+                "https://www.whatsapp.com/channel/0029Va4K00494444"
+            ]
+        },
+        "phoneNumbers": {
+            "title": "Phone Numbers to Check / Validate",
+            "type": "array",
+            "description": "Phone numbers in international format (e.g. +14155552671, +971501234567).",
+            "editor": "stringList",
+            "prefill": [
+                "+14155552671"
+            ]
+        },
+        "searchKeywords": {
+            "title": "Keywords for Group Finder",
+            "type": "array",
+            "description": "Search topics/niches to discover public WhatsApp group invite links.",
+            "editor": "stringList",
+            "prefill": [
+                "artificial intelligence developers",
+                "crypto trading community"
+            ]
+        },
+        "maxItems": {
+            "title": "Maximum Items Per Run",
+            "type": "integer",
+            "description": "Maximum number of groups, channels, or phone checks to process.",
+            "default": 50,
+            "minimum": 1,
+            "maximum": 5000
+        },
+        "proxyConfiguration": {
+            "title": "Proxy Configuration",
+            "type": "object",
+            "description": "Select Apify Proxy (RESIDENTIAL recommended for WhatsApp to avoid IP bans).",
+            "editor": "proxy",
+            "default": {
+                "useApifyProxy": true
+            }
+        }
+    },
+    "required": []
+}
