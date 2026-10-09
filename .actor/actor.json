@@ -1,0 +1,25 @@
+{
+    "actorSpecification": 1,
+    "name": "whatsapp-ultimate-scraper",
+    "title": "WhatsApp Ultimate Scraper (Groups, Channels, Numbers & Business Leads)",
+    "description": "Comprehensive all-in-one WhatsApp data extractor & lead generator. Extracts WhatsApp Group invite metadata & participants, WhatsApp Channels & followers, Phone Number validation, WhatsApp Business Profiles, Product Catalogs, and Public Group Finder by Keyword.",
+    "version": "1.0.0",
+    "meta": {
+        "templateId": "js-crawlee-playwright"
+    },
+    "dockerfile": "./Dockerfile",
+    "input": "./input_schema.json",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    },
+    "output": "./output_schema.json",
+    "categories": [
+        "LEAD_GENERATION",
+        "MARKETING",
+        "COMMUNICATION",
+        "SOCIAL_MEDIA"
+    ],
+    "environmentVariables": {
+        "APIFY_DISABLE_BROWSER_SANDBOX": "1"
+    }
+}
