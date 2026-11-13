@@ -5,8 +5,34 @@ import {
     parseGroupInviteHtml,
     parseChannelHtml,
     parsePhoneCheckHtml,
+    parseCatalogHtml,
     cleanPhoneNumber
 } from './extractors.js';
+
+function sanitizeRecord(obj) {
+    if (Array.isArray(obj)) {
+        return obj
+            .map((item) => sanitizeRecord(item))
+            .filter((item) => item !== null && item !== undefined && !(typeof item === 'number' && !Number.isFinite(item)));
+    }
+    if (!obj || typeof obj !== 'object') return obj;
+    const clean = {};
+    for (const [k, v] of Object.entries(obj)) {
+        if (v !== null && v !== undefined && !(typeof v === 'number' && !Number.isFinite(v))) {
+            clean[k] = Array.isArray(v)
+                ? sanitizeRecord(v)
+                : v && typeof v === 'object' && !(v instanceof Date)
+                    ? sanitizeRecord(v)
+                    : v;
+        }
+    }
+    return clean;
+}
+
+function isProxyTransportError(errOrStatus) {
+    const msg = String(errOrStatus?.message || errOrStatus || '');
+    return errOrStatus === 597 || errOrStatus === 407 || /597|UPSTREAM407|407|Proxy responded with|tunneling socket/i.test(msg);
+}
 
 await Actor.init();
 
@@ -27,11 +53,18 @@ log.info('🚀 Starting WhatsApp Ultimate Scraper...', {
     searchKeywordsCount: searchKeywords.length
 });
 
-const proxyConfig = proxyConfiguration ? await Actor.createProxyConfiguration(proxyConfiguration) : undefined;
+const safeMaxItems = Math.max(1, Number(maxItems) || 50);
+
+let proxyConfig;
+try {
+    proxyConfig = proxyConfiguration ? await Actor.createProxyConfiguration(proxyConfiguration) : undefined;
+} catch (proxyErr) {
+    log.warning(`⚠️ Proxy configuration skipped (${proxyErr.message}). Continuing directly.`);
+}
 
 // Default sample targets if nothing provided
-let urlsToProcess = [...targetUrls];
-let numbersToProcess = [...phoneNumbers];
+let urlsToProcess = [...targetUrls].slice(0, safeMaxItems);
+let numbersToProcess = [...phoneNumbers].slice(0, safeMaxItems);
 let keywordsToProcess = [...searchKeywords];
 
 if (urlsToProcess.length === 0 && numbersToProcess.length === 0 && keywordsToProcess.length === 0) {
@@ -73,6 +106,12 @@ async function fetchHtml(url) {
 async function fetchWithPlaywright(url) {
     let content = '';
     const crawler = new PlaywrightCrawler({
+        preNavigationHooks: [
+            async ({ page }) => {
+                await page.route('**/*.{mp4,webm,avi,woff,woff2}', (route) => route.abort().catch(() => {}));
+            },
+        ],
+            maxConcurrency: 2,
         proxyConfiguration: proxyConfig,
         maxRequestsPerCrawl: 1,
         headless: true,
@@ -91,6 +130,7 @@ function detectUrlMode(url, explicitMode) {
     const lower = url.toLowerCase();
     if (lower.includes('chat.whatsapp.com')) return 'GROUPS';
     if (lower.includes('/channel/')) return 'CHANNELS';
+    if (lower.includes('wa.me/c/') || lower.includes('/catalog')) return 'CATALOG';
     if (lower.includes('wa.me') || lower.includes('send/?phone=')) return 'NUMBER_CHECK';
     return 'GROUPS';
 }
@@ -98,6 +138,7 @@ function detectUrlMode(url, explicitMode) {
 const stats = {
     groups: 0,
     channels: 0,
+    catalogs: 0,
     numbersChecked: 0,
     discoveredGroups: 0,
     failed: 0
@@ -123,23 +164,30 @@ for (const rawUrl of urlsToProcess) {
         if (currentMode === 'GROUPS') {
             const group = parseGroupInviteHtml(html, url);
             if (group) {
-                await Actor.pushData(group);
+                await Actor.pushData(sanitizeRecord(group));
                 stats.groups++;
                 log.info(`✅ Successfully scraped WhatsApp Group: "${group.title}" [Status: ${group.status}, Members: ${group.membersCount}]`);
             }
         } else if (currentMode === 'CHANNELS') {
             const channel = parseChannelHtml(html, url);
             if (channel) {
-                await Actor.pushData(channel);
+                await Actor.pushData(sanitizeRecord(channel));
                 stats.channels++;
                 log.info(`✅ Successfully scraped WhatsApp Channel: "${channel.title}" [Followers: ${channel.followersCount}]`);
+            }
+        } else if (currentMode === 'CATALOG') {
+            const catalog = parseCatalogHtml(html, url);
+            if (catalog) {
+                await Actor.pushData(sanitizeRecord(catalog));
+                stats.catalogs++;
+                log.info(`✅ Successfully scraped WhatsApp Business Catalog: "${catalog.title}" [Products: ${catalog.catalogProductsCount}]`);
             }
         } else if (currentMode === 'NUMBER_CHECK') {
             const phoneMatch = url.match(/(?:\/|\?phone=)(\+?\d+)/);
             const phone = phoneMatch ? phoneMatch[1] : url;
             const res = parsePhoneCheckHtml(html, phone);
             if (res) {
-                await Actor.pushData(res);
+                await Actor.pushData(sanitizeRecord(res));
                 stats.numbersChecked++;
                 log.info(`✅ Checked WhatsApp Number: ${res.phone} [Valid: ${res.phoneValid}, Business: ${res.isBusiness}]`);
             }
@@ -169,7 +217,7 @@ if (numbersToProcess.length > 0) {
 
             const result = parsePhoneCheckHtml(html, phone);
             if (result) {
-                await Actor.pushData(result);
+                await Actor.pushData(sanitizeRecord(result));
                 stats.numbersChecked++;
                 log.info(`✅ Result for ${phone}: [Valid: ${result.phoneValid}, Business: ${result.isBusiness}]`);
             }
@@ -202,7 +250,7 @@ if (keywordsToProcess.length > 0) {
                     const groupData = parseGroupInviteHtml(gHtml, groupUrl);
                     if (groupData) {
                         groupData.searchQuery = keyword;
-                        await Actor.pushData(groupData);
+                        await Actor.pushData(sanitizeRecord(groupData));
                         stats.discoveredGroups++;
                         log.info(`🎉 Discovered & Verified Group: "${groupData.title}" (${groupData.url})`);
                     }
@@ -216,15 +264,19 @@ if (keywordsToProcess.length > 0) {
 }
 
 // Generate summary report
+const totalRecordsExtracted = stats.groups + stats.channels + stats.catalogs + stats.numbersChecked + stats.discoveredGroups;
 const summary = {
-    status: 'COMPLETED',
+    status: totalRecordsExtracted > 0 ? 'COMPLETED' : 'FAILED',
     timestamp: new Date().toISOString(),
     metrics: stats,
-    totalRecordsExtracted: stats.groups + stats.channels + stats.numbersChecked + stats.discoveredGroups,
+    totalRecordsExtracted,
     message: 'WhatsApp Ultimate Scraper completed successfully.'
 };
 
 await Actor.setValue('OUTPUT', summary);
+if (summary.totalRecordsExtracted === 0) {
+    await Actor.fail('Extracted 0 records. Check target URLs, keywords, or proxy configuration.');
+}
 log.info('🏁 Execution Finished. Executive Summary:', summary);
 
 await Actor.exit();
