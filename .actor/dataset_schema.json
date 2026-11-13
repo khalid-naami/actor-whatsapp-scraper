@@ -15,6 +15,10 @@
                 "type": "string",
                 "title": "Group Code, Channel ID, or Phone"
             },
+            "groupCode": {
+                "type": "string",
+                "title": "Group Invite Code"
+            },
             "title": {
                 "type": "string",
                 "title": "Name / Title"
@@ -93,11 +97,33 @@
             },
             "products": {
                 "type": "array",
-                "title": "Catalog Products"
+                "title": "Catalog Products",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
             },
             "channelUpdates": {
                 "type": "array",
-                "title": "Recent Channel Updates"
+                "title": "Recent Channel Updates",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            },
+            "emails": {
+                "type": "array",
+                "title": "Extracted Contact Emails",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "externalLinks": {
+                "type": "array",
+                "title": "Extracted External Links",
+                "items": {
+                    "type": "string"
+                }
             },
             "searchQuery": {
                 "type": "string",
@@ -106,6 +132,63 @@
             "scrapedAt": {
                 "type": "string",
                 "title": "Scraped At Timestamp"
+            }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": true,
+        "required": []
+    },
+    "views": {
+        "overview": {
+            "title": "Overview",
+            "transformation": {
+                "fields": [
+                    "type",
+                    "url",
+                    "id",
+                    "title",
+                    "description",
+                    "iconUrl",
+                    "status",
+                    "membersCount"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "type": {
+                        "label": "Entity Type",
+                        "format": "text"
+                    },
+                    "url": {
+                        "label": "WhatsApp URL",
+                        "format": "link"
+                    },
+                    "id": {
+                        "label": "Group Code, Channel ID, or Phone",
+                        "format": "text"
+                    },
+                    "title": {
+                        "label": "Name / Title",
+                        "format": "text"
+                    },
+                    "description": {
+                        "label": "Description / About",
+                        "format": "text"
+                    },
+                    "iconUrl": {
+                        "label": "Avatar / Icon URL",
+                        "format": "link"
+                    },
+                    "status": {
+                        "label": "Invite Status (Active, Full, Revoked)",
+                        "format": "text"
+                    },
+                    "membersCount": {
+                        "label": "Group Members Count",
+                        "format": "text"
+                    }
+                }
             }
         }
     }
